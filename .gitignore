@@ -1,0 +1,5 @@
+.env
+briefs/
+__pycache__/
+*.pyc
+server.log

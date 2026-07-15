@@ -1,0 +1,65 @@
+{
+  "_comment": "SYNAPSE PLAYBOOK - defines who we are, what we sell, and to whom. Every brief is shaped by this. Changing this changes the whole tool's behaviour. Update it with the partner's real info.",
+
+  "company": {
+    "name": "Digitograffi",
+    "one_liner": "A digital marketing, AI tool automation, and AI development agency.",
+    "size": "40-50 employees",
+    "website": ""
+  },
+
+  "what_we_sell": [
+    {
+      "service": "Digital Marketing",
+      "pitch": "Grow leads and online presence through SEO, paid ads, social media and content."
+    },
+    {
+      "service": "AI Tool Automation",
+      "pitch": "Automate repetitive work (research, outreach, reporting, data entry) with AI to save the team time."
+    },
+    {
+      "service": "AI Development",
+      "pitch": "Build custom AI tools, agents and integrations that fit the business's own workflow."
+    }
+  ],
+
+  "ideal_customer": {
+    "description": "Small-to-mid businesses that need a strong digital presence, or have repetitive manual work that AI can automate.",
+    "company_size": "10-500 employees",
+    "good_signals": [
+      "Recently raised funding (budget for growth marketing / tech)",
+      "Actively hiring (scaling, needs systems)",
+      "Old or slow website (redesign / SEO opportunity)",
+      "Visible manual processes (automation opportunity)",
+      "New product or market launch (needs a marketing push)"
+    ],
+    "bad_fit": [
+      "A very small solopreneur with no budget",
+      "Already locked into a large agency",
+      "A business with no digital component at all"
+    ]
+  },
+
+  "how_to_pitch": {
+    "lead_with": "Open with a real trigger event (funding, hiring, new launch), not a generic 'we are an agency'.",
+    "angle_rules": [
+      "If funding -> growth marketing + AI automation to scale",
+      "If hiring -> automate processes to keep the team efficient",
+      "If old/slow website -> redesign + SEO",
+      "If manual work visible -> custom AI development"
+    ],
+    "avoid": [
+      "False praise or invented facts (every claim needs a source)",
+      "Cramming all three services into one email - pick one angle",
+      "Em dash / en dash (use a plain hyphen)"
+    ]
+  },
+
+  "competitors_note": "Digital marketing agencies and freelancers are common competition. Our edge: marketing + AI automation + custom AI development in one place, which typical agencies do not offer.",
+
+  "test_account": {
+    "name": "",
+    "website": "",
+    "_note": "Put a real company name/website here that Digitograffi could approach. If empty, the tool will ask on the CLI."
+  }
+}

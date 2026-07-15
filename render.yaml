@@ -1,0 +1,17 @@
+# Render deploy config for Synapse Research Agent.
+# Render reads this automatically when you create a "Blueprint" from the repo.
+services:
+  - type: web
+    name: synapse
+    runtime: python
+    plan: free
+    # No dependencies to install (stdlib only), but keep pip happy.
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python server.py"
+    envVars:
+      - key: HOST
+        value: "0.0.0.0"
+      - key: GEMINI_API_KEY
+        sync: false        # set this in the Render dashboard (secret)
+      - key: SERPER_API_KEY
+        sync: false        # set this in the Render dashboard (secret)
