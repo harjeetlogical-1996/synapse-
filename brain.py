@@ -62,15 +62,23 @@ Trigger events (with sources):
 {_triggers_text(triggers)}
 
 Return ONLY this JSON. Do not invent facts; if unknown, write "unknown".
-Keep every field short.
+Base everything on the signals above. Be specific and useful to a real rep.
 {{
+ "snapshot":"2 lines - what this company does, industry, rough size/stage",
  "fit_score":"high|medium|low",
- "fit_reason":"1 line",
+ "fit_reason":"1 line - why they fit (or not) for us",
  "recommended_service":"one of our services",
- "pitch_angle":"2 lines - which signal to open with",
- "talking_points":["p1","p2","p3"],
- "what_to_avoid":"1 line",
- "buying_committee":["roles likely to decide"],
+ "pitch_angle":"2 lines - which signal to open with and the core message",
+ "pain_points":["likely pain 1 inferred from signals","pain 2","pain 3"],
+ "talking_points":["specific point 1","point 2","point 3","point 4"],
+ "opener":"1 personalized ice-breaker line a rep can say on a call or email",
+ "discovery_questions":["MEDDICC-style question 1","question 2","question 3"],
+ "objections":[{{"objection":"likely pushback","response":"how to handle it"}},{{"objection":"another","response":"handle"}}],
+ "buying_committee":[{{"role":"title likely to decide","why":"their concern"}}],
+ "competitor_angle":"1 line - if a competitor/incumbent is implied, how to position; else 'unknown'",
+ "best_channel":"email|linkedin|call - which to use and why, 1 line",
+ "next_action":"1 clear next step the rep should take now",
+ "what_to_avoid":"1 line - what NOT to do with this account",
  "confidence":"high|medium|low",
  "email_subject":"short subject line",
  "email_body":"70-110 word cold email. Open with the trigger if any. Lead ONE service. Warm, human, not spammy. Plain hyphens only, no em dash."
@@ -83,8 +91,8 @@ def _call_gemini(prompt: str) -> dict:
     url = GEMINI_URL.format(model=config.GEMINI_MODEL, key=config.GEMINI_API_KEY)
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
-        # low ceiling: enough for the JSON, not wasteful
-        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 900},
+        # ceiling for the richer JSON, still bounded to keep cost low
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 1600},
     }).encode("utf-8")
     req = urllib.request.Request(
         url, data=body, method="POST",
@@ -133,17 +141,40 @@ def _fallback(company: str, playbook: dict, triggers: dict, tech_res: dict) -> d
     )
 
     return {
+        "snapshot": f"{company}. Details limited (no AI key set). Tech seen: {tech_names}.",
         "fit_score": "medium",
         "fit_reason": "Rule-based estimate (no Gemini key).",
         "recommended_service": service,
         "pitch_angle": angle,
+        "pain_points": [
+            "Scaling without enough automation" if has_hiring else "Growth / visibility gaps",
+            "Manual work eating team time",
+            "unknown",
+        ],
         "talking_points": [
             f"Website tech: {tech_names}",
             "Funding signal" if has_funding else ("Hiring signal" if has_hiring else "General outreach"),
             "Digitograffi offers marketing + AI automation + AI dev in one place",
+            "One partner instead of three separate vendors",
         ],
+        "opener": f"Saw what's happening at {company} - had a quick idea for you.",
+        "discovery_questions": [
+            "What is slowing your team down the most right now?",
+            "Who owns marketing and automation decisions?",
+            "unknown",
+        ],
+        "objections": [
+            {"objection": "We already have an agency", "response": "We add AI automation most agencies do not offer."},
+            {"objection": "Not the right time", "response": "Start with one small automation, no big commitment."},
+        ],
+        "buying_committee": [
+            {"role": "Founder/CEO", "why": "Owns growth and budget"},
+            {"role": "Marketing head", "why": "Owns the outcome"},
+        ],
+        "competitor_angle": "unknown",
+        "best_channel": "email - low friction first touch",
+        "next_action": "Send the drafted email and follow up in 3 days.",
         "what_to_avoid": "Do not cram all three services; pick one angle.",
-        "buying_committee": ["Founder/CEO", "Marketing head", "unknown"],
         "confidence": "low",
         "email_subject": f"{company} - a quick idea from {sender}",
         "email_body": body,

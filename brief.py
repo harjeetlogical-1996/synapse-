@@ -91,6 +91,55 @@ def build(company: str, playbook: dict, triggers: dict, tech_res: dict,
       <div style="margin-top:12px">{sig_rows}</div>
     </section>""" if intent else ""
 
+    # ---- richer sections (only render when data present) ----
+    def _sec(title, inner):
+        return f'<section><h3>{title}</h3>{inner}</section>' if inner else ""
+
+    snapshot = brain.get("snapshot", "")
+    snapshot_html = _sec("Company snapshot", f'<div class="why">{_esc(snapshot)}</div>') if snapshot and snapshot != "unknown" else ""
+
+    pains = [p for p in (brain.get("pain_points") or []) if p and p != "unknown"]
+    pains_html = _sec("Likely pain points", _list_html(pains)) if pains else ""
+
+    opener = brain.get("opener", "")
+    opener_html = _sec("Personalized opener", f'<div class="opener">{_esc(opener)}</div>') if opener and opener != "unknown" else ""
+
+    dqs = [q for q in (brain.get("discovery_questions") or []) if q and q != "unknown"]
+    dq_html = ""
+    if dqs:
+        rows = "".join(f'<div class="dq"><span class="qn">{i+1}</span><span>{_esc(q)}</span></div>' for i, q in enumerate(dqs))
+        dq_html = _sec("Discovery questions", f'<div class="dqs">{rows}</div>')
+
+    objs = [o for o in (brain.get("objections") or []) if isinstance(o, dict) and o.get("objection")]
+    obj_html = ""
+    if objs:
+        rows = "".join(
+            f'<div class="obj"><div class="o">{_esc(o.get("objection",""))}</div>'
+            f'<div class="r">{_esc(o.get("response",""))}</div></div>' for o in objs)
+        obj_html = _sec("Objection prep", f'<div class="objs">{rows}</div>')
+
+    # buying committee now supports [{role, why}] or plain strings
+    comm = brain.get("buying_committee") or []
+    comm_rows = ""
+    for c in comm:
+        if isinstance(c, dict):
+            comm_rows += f'<div class="cm"><b>{_esc(c.get("role","?"))}</b><span>{_esc(c.get("why",""))}</span></div>'
+        else:
+            comm_rows += f'<div class="cm"><b>{_esc(c)}</b></div>'
+    comm_html = _sec("Buying committee", f'<div class="cms">{comm_rows}</div>') if comm_rows else ""
+
+    comp = brain.get("competitor_angle", "")
+    comp_html = _sec("Competitor angle", f'<div class="why">{_esc(comp)}</div>') if comp and comp != "unknown" else ""
+
+    channel = brain.get("best_channel", "")
+    nexta = brain.get("next_action", "")
+    play_html = ""
+    if (channel and channel != "unknown") or (nexta and nexta != "unknown"):
+        play_html = _sec("Play", (
+            (f'<div class="kv"><span class="k">Best channel</span><span>{_esc(channel)}</span></div>' if channel and channel != "unknown" else "") +
+            (f'<div class="kv"><span class="k">Next action</span><span>{_esc(nexta)}</span></div>' if nexta and nexta != "unknown" else "")
+        ))
+
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -225,6 +274,38 @@ def build(company: str, playbook: dict, triggers: dict, tech_res: dict,
   .sig .pts {{ font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600;
     color:var(--cyan); flex-shrink:0; width:38px; }}
   .sig .lb {{ flex:1; color:var(--text-2); }}
+
+  /* opener */
+  .opener {{ background:rgba(45,212,191,.07); border:1px solid rgba(45,212,191,.28);
+    border-radius:12px; padding:15px 17px; font-size:15px; font-weight:500; color:var(--text);
+    font-style:italic; }}
+  /* discovery questions */
+  .dqs {{ display:flex; flex-direction:column; gap:8px; }}
+  .dq {{ display:flex; gap:12px; align-items:flex-start; font-size:14px; }}
+  .dq .qn {{ flex-shrink:0; width:22px; height:22px; border-radius:7px; background:var(--panel-hi);
+    border:1px solid var(--line-2); display:grid; place-items:center; font-size:11px;
+    font-weight:700; color:var(--accent); font-family:'JetBrains Mono',monospace; }}
+  /* objections */
+  .objs {{ display:flex; flex-direction:column; gap:10px; }}
+  .obj {{ border:1px solid var(--line); border-radius:11px; overflow:hidden; }}
+  .obj .o {{ padding:10px 14px; font-size:13.5px; font-weight:600; background:var(--panel-hi);
+    color:var(--text); }}
+  .obj .o::before {{ content:"“"; color:var(--text-3); margin-right:2px; }}
+  .obj .r {{ padding:10px 14px; font-size:13.5px; color:var(--text-2); }}
+  .obj .r::before {{ content:"→ "; color:var(--cyan); font-weight:700; }}
+  /* committee */
+  .cms {{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }}
+  @media(max-width:600px){{ .cms {{ grid-template-columns:1fr; }} }}
+  .cm {{ background:var(--panel-2); border:1px solid var(--line); border-radius:10px;
+    padding:11px 13px; }}
+  .cm b {{ display:block; font-size:13.5px; color:var(--text); }}
+  .cm span {{ font-size:12px; color:var(--text-3); }}
+  /* play (key-value) */
+  .kv {{ display:flex; gap:14px; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px; }}
+  .kv:last-child {{ border-bottom:none; }}
+  .kv .k {{ flex-shrink:0; width:100px; color:var(--accent); font-weight:600; font-size:12px;
+    text-transform:uppercase; letter-spacing:.04em; padding-top:1px; }}
+  .kv span:last-child {{ color:var(--text); }}
 </style></head>
 <body>
 <div class="sheet">
@@ -246,6 +327,7 @@ def build(company: str, playbook: dict, triggers: dict, tech_res: dict,
   </div>
   <div class="body">
     {intent_html}
+    {snapshot_html}
     <section>
       <h3>Why this account</h3>
       <div class="why">{_esc(brain.get('fit_reason','-'))}</div>
@@ -256,10 +338,16 @@ def build(company: str, playbook: dict, triggers: dict, tech_res: dict,
       <div class="angle"><span class="q">&#8220;</span><div>{_esc(brain.get('pitch_angle','-'))}</div></div>
     </section>
 
+    {opener_html}
+    {pains_html}
+
     <section>
       <h3>Talking points</h3>
       {_list_html(brain.get('talking_points'))}
     </section>
+
+    {dq_html}
+    {obj_html}
 
     <section>
       <h3>Trigger events · with source</h3>
@@ -271,10 +359,9 @@ def build(company: str, playbook: dict, triggers: dict, tech_res: dict,
       <div class="row" style="margin-top:0">{_tech_html(tech_res)}</div>
     </section>
 
-    <section>
-      <h3>Buying committee</h3>
-      <div class="committee">{"".join('<span>' + _esc(x) + '</span>' for x in (brain.get('buying_committee') or ['unknown']))}</div>
-    </section>
+    {comm_html}
+    {comp_html}
+    {play_html}
 
     <section>
       <h3>What to avoid</h3>
